@@ -3,6 +3,8 @@ import math
 import numpy as np
 from network.Vision import *
 
+"""Class for a PC. PC's are largely similar to NPC's, only they update their actions based on actual keyboard presses
+and movement is governed in a more classical dungeon-crawler style"""
 class PC():
     blocking = True
     updateable = True
@@ -25,8 +27,10 @@ class PC():
         self.speed  = 2
 
         self.V = Vision( self.model.getGrid(), 11)
-        
 
+    #Initialize the sprites for this PC
+    #Animations are not yet implemented
+    #The sprite displayed will depend only on the orientation of the PC for now
     def loadSprites(self,sprite_name):
         path = "../res/sprites/%s/" % (sprite_name)
         sprites = {8:pygame.image.load(path+'N.png' ),
@@ -38,43 +42,59 @@ class PC():
                    4:pygame.image.load(path+'W.png' ),
                    7:pygame.image.load(path+'NW.png')}
         return sprites
-        
+
+    #Currently unused
+    #Deal damage to the NPC
     def damage(self,amount):
         self.hp = max(0,self.hp-amount)
 
+    #Currently unused
+    #Heal the NPC
     def heal(self,amount):
         self.hp = min(self.max_hp, self.hp+amount)
 
+    #Update the NPC one game tick
     def update(self):
+        #retrieve the currently pressed buttons from the model
         keys = {'w':self.model.getKey(119),
                 'a':self.model.getKey( 97),
                 's':self.model.getKey(115),
                 'd':self.model.getKey(100)}
 
+        #Update movement related parameters based on current value and game inputs
         (self.x_mom, self.y_mom)    = self.updateMoment(self.x_mom, self.y_mom, keys)
         (self.x,self.y,x_spd,y_spd) = self.updateCoords(self.x,self.y,self.x_mom,self.y_mom)
         self.o                      = self.determineOrientation(x_spd,y_spd,keys)
 
+        #Update real and grid positions based on movement parameters
         old_x_grid = self.x_grid
         old_y_grid = self.y_grid
         (self.x_grid,self.y_grid) = self.model.getGridPosition(self.x,self.y)
+
+        #Return both the old and new positions on the grid.
+        #If old and new positions differ, the model will need to update its game logic
         return (old_x_grid,old_y_grid,self.x_grid,self.y_grid)
 
     """MOVEMENT METHODS"""
-    
+
+    #Based on speed in x and y direction, determine which direction the NPC is facing
+    #   orientations are represented as numbers which correspond with the directions of the numbers on the numpad
     def determineOrientation(self,dx,dy,keys):
         o = self.o
         if (keys['w'] or keys['a'] or keys['s'] or keys['d']) and not (dx == 0 and dy == 0):
-            if dx > 2*abs(dy):        o = 6
-            elif -dx > 2*abs(dy):     o = 4
-            elif dy > 2*abs(dx):      o = 2
-            elif -dy > 2*abs(dx):     o = 8
-            elif dx >= 0 and dy >= 0: o = 3
-            elif dx <= 0 and dy >= 0: o = 1
-            elif dx <= 0 and dy <= 0: o = 7
-            elif dx >= 0 and dy <= 0: o = 9
+            if dx > 2*abs(dy):        o = 6 #east
+            elif -dx > 2*abs(dy):     o = 4 #west
+            elif dy > 2*abs(dx):      o = 2 #south
+            elif -dy > 2*abs(dx):     o = 8 #north
+            elif dx >= 0 and dy >= 0: o = 3 #south-east
+            elif dx <= 0 and dy >= 0: o = 1 #south-west
+            elif dx <= 0 and dy <= 0: o = 7 #north-west
+            elif dx >= 0 and dy <= 0: o = 9 #north-east
         return o
 
+    #Based on the previous state and the keyboard inputs, update the momentum for the current frame
+    #Controls are interpreted from a top-down view perspective, so 'w' is north, 'a' is west, 's' is south and 'd'
+    #is east
     def updateMoment(self,x_mom,y_mom, keys):
         if   x_mom > 0: x_mom = max(0,min( self.maxmom, x_mom + (self.d_mom if keys['d'] and not keys['a'] else -self.d_mom)))
         elif x_mom < 0: x_mom = min(0,max(-self.maxmom, x_mom - (self.d_mom if keys['a'] and not keys['d'] else -self.d_mom)))
@@ -96,6 +116,7 @@ class PC():
 
         return (x_mom,y_mom)
 
+    #move the PC based on momentum
     def updateCoords(self,x,y,x_mom,y_mom):
         x_spd = self.mom2spd( x_mom )
         y_spd = self.mom2spd( y_mom )
@@ -104,11 +125,14 @@ class PC():
         y = y + y_spd
         return (x,y,x_spd,y_spd)
 
+     #convert momentum to speed
+    #the relationship between momentum and speed is sigmoidal. That way, at low speeds acceleration is linear and at higher speeds, acceleration flattens out
     def mom2spd( self,mom ):
         return (1 / (1 + math.exp(-mom)) - 0.5) * 2 * self.speed
 
     """GETTER METHODS"""
 
+    #Not really necessary, but I'll just leave this here for debugging or later to be implemented gameplay mechanics
     def getVision(self):
         inputs = []
         for i in range(11):

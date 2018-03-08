@@ -1,5 +1,6 @@
 import pygame
 
+"""Entity class for a consumable object"""
 class Consumable():
     blocking = False
     updateable = False
@@ -12,9 +13,13 @@ class Consumable():
         self.model = model
         self.c_heat = color_heat
 
+
+    #Since food does not run away (yet), update function is implemented as dummy method 
     def update(self):
         return (0,0,0,0)
 
+    """GETTER METHODS"""
+    
     def getPblock(self):
         return self.pb
 
@@ -27,9 +32,10 @@ class Consumable():
     def getSprite(self):
         return self.sprite
 
+    #color is a single float representing a pint on a matplotlib color map
     def getCHeat(self):
         return self.c_heat
-    
+
     def getBlocking(self):
         return self.blocking
 

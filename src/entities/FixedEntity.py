@@ -1,5 +1,6 @@
 import pygame
 
+"""Currently unused, maybe implement as abstract class later"""
 class FixedEntity():
     def __init__(self,name,x,y,P_block, hp):
         self.name = name
