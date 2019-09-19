@@ -5,6 +5,7 @@ sys.path.append("..")
 
 from tools.DEBUG import *
 
+
 class Main:
     def __init__(self):
         pygame.init()
@@ -12,6 +13,7 @@ class Main:
 
     def getModel(self):
         return self.model
+
 
 if __name__ == '__main__':
     m = Main()

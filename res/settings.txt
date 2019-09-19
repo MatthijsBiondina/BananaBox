@@ -1,5 +1,5 @@
 #basic settings for the display
-title = The Adventure of Heiu Hitera
+title = The Adventure of Bob
 frame_rate = 120
 display_width = 1916
 display_height = 640
